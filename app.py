@@ -37,7 +37,6 @@ def load_data():
     # 🧩 Réorganisation : insérer jour_num entre "jour" et "mois"
     cols = list(df.columns)
     if "jour_num" in cols and "jour" in cols and "mois" in cols:
-        # Retire et replace à la bonne position
         cols.insert(cols.index("mois"), cols.pop(cols.index("jour_num")))
         df = df[cols]
 
@@ -90,11 +89,14 @@ mois_label_selection = st.selectbox("Mois :", mois_labels)
 mois_selection = mois_map[mois_label_selection]
 df_filtre = df[df["mois_annee"] == mois_selection]
 
+# 🧩 Masquer la colonne "date" dans l'affichage
+df_filtre_visu = df_filtre.drop(columns=["date"])
+
 # -----------------------------
 # 🖌️ Application des styles
 # -----------------------------
 styled_df = (
-    df_filtre.style
+    df_filtre_visu.style
     .apply(color_row, axis=1)
     .applymap(color_vacances, subset=["Vacances_scolaires"])
 )
@@ -118,8 +120,8 @@ st.dataframe(styled_df, use_container_width=True)
 # -----------------------------
 st.markdown(
     "<p style='color:gray; font-size:13px;'>"
-    "Une nouvelle colonne <b>jour_num</b> affiche le numéro du jour dans le mois. "
-    "Elle est placée entre <b>jour</b> et <b>mois</b>. "
+    "La colonne <b>date</b> est masquée dans l'affichage mais reste utilisée pour le tri. "
+    "La colonne <b>jour_num</b> affiche le numéro du jour dans le mois. "
     "Les jours fériés sont en <b>texte rouge</b> sur le fond du parent. "
     "La colonne <b>parent</b> reste juste après <b>mois</b>. "
     "Les vacances scolaires sont en violet uniquement dans leur colonne."
