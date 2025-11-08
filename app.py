@@ -17,6 +17,9 @@ def load_data():
     # Conversion en date (sans heures)
     df["date"] = pd.to_datetime(df["date"]).dt.date
 
+    # ➕ Extraction du numéro du jour dans le mois
+    df["jour_num"] = pd.to_datetime(df["date"]).dt.day
+
     # Nettoyage des colonnes texte
     for col in ["nom_ferie", "Vacances_scolaires"]:
         df[col] = df[col].astype(str).replace(["None", "nan", "NaT"], "")
@@ -31,8 +34,14 @@ def load_data():
     if "obs" in first_col.lower() or first_col.lower().startswith("unnamed"):
         df = df.drop(columns=[first_col])
 
-    # Réorganisation : "parent" juste après "mois"
+    # 🧩 Réorganisation : insérer jour_num entre "jour" et "mois"
     cols = list(df.columns)
+    if "jour_num" in cols and "jour" in cols and "mois" in cols:
+        # Retire et replace à la bonne position
+        cols.insert(cols.index("mois"), cols.pop(cols.index("jour_num")))
+        df = df[cols]
+
+    # 🧩 Réorganisation : "parent" juste après "mois"
     if "parent" in cols and "mois" in cols:
         cols.insert(cols.index("mois") + 1, cols.pop(cols.index("parent")))
         df = df[cols]
@@ -46,7 +55,6 @@ df = load_data()
 # -----------------------------
 def color_row(row):
     """Coloration par ligne complète avec fond parent + texte rouge si jour férié"""
-
     # Déterminer le fond en fonction du parent
     if "Jerome" in str(row["parent"]):
         background = "#d2f8d2"  # vert clair
@@ -64,7 +72,6 @@ def color_row(row):
         style = f"background-color: {background};"
 
     return [style] * len(row)
-
 
 def color_vacances(val):
     """Couleur violette uniquement sur la colonne Vacances_scolaires"""
@@ -111,10 +118,11 @@ st.dataframe(styled_df, use_container_width=True)
 # -----------------------------
 st.markdown(
     "<p style='color:gray; font-size:13px;'>"
-    "Les jours fériés sont affichés en <b>texte rouge</b> sur le fond du parent. "
-    "La colonne <b>parent</b> est juste après <b>mois</b>. "
-    "Les vacances scolaires apparaissent uniquement dans leur colonne en violet. "
-    "Les vendredis sont surlignés en jaune clair."
+    "Une nouvelle colonne <b>jour_num</b> affiche le numéro du jour dans le mois. "
+    "Elle est placée entre <b>jour</b> et <b>mois</b>. "
+    "Les jours fériés sont en <b>texte rouge</b> sur le fond du parent. "
+    "La colonne <b>parent</b> reste juste après <b>mois</b>. "
+    "Les vacances scolaires sont en violet uniquement dans leur colonne."
     "</p>",
     unsafe_allow_html=True
 )
