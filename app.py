@@ -5,8 +5,35 @@ import streamlit as st
 # ⚙️ Configuration
 # -----------------------------
 st.set_page_config(page_title="Calendrier Victor", layout="wide")
-st.title("📅 Calendrier de garde Victor — 2025-2026")
 
+# 🔧 Bloc pour forcer un affichage lisible sur iPhone / iPad
+st.markdown("""
+    <style>
+    /* Forcer le thème clair sur Safari iOS */
+    html, body, [class*="css"]  {
+        color: black !important;
+        background-color: white !important;
+    }
+
+    /* Forcer le texte noir dans les tableaux */
+    div[data-testid="stDataFrame"], table, th, td, span, p {
+        color: black !important;
+    }
+
+    /* Uniformiser les couleurs dans le mode sombre forcé d’iOS */
+    @media (prefers-color-scheme: dark) {
+        html, body, [class*="css"] {
+            color: black !important;
+            background-color: white !important;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# -----------------------------
+# 📅 Titre de la page
+# -----------------------------
+st.title("📅 Calendrier de garde Victor — 2025-2026")
 # -----------------------------
 # 📂 Chargement et nettoyage des données
 # -----------------------------
