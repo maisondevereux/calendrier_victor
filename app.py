@@ -39,32 +39,31 @@ def load_data():
 
     return df
 
-
 df = load_data()
 
 # -----------------------------
 # 🎨 Fonctions de coloration
 # -----------------------------
 def color_row(row):
-    """Coloration par ligne complète (hors colonne Vacances_scolaires)"""
-    # Jours fériés → texte rouge pour toute la ligne
-    if pd.notna(row["nom_ferie"]) and str(row["nom_ferie"]).strip() != "":
-        return [f"color: red; font-weight: bold;"] * len(row)
+    """Coloration par ligne complète avec fond parent + texte rouge si jour férié"""
 
-    # Vendredi (couleur spéciale)
-    elif str(row["jour"]).strip().lower() == "vendredi":
-        return [f"background-color: #fff4cc;"] * len(row)
-
-    # Parent Jérôme
-    elif "Jerome" in str(row["parent"]):
-        return [f"background-color: #d2f8d2;"] * len(row)
-
-    # Parent Sanou
+    # Déterminer le fond en fonction du parent
+    if "Jerome" in str(row["parent"]):
+        background = "#d2f8d2"  # vert clair
     elif "Sanou" in str(row["parent"]):
-        return [f"background-color: #cce0ff;"] * len(row)
-
+        background = "#cce0ff"  # bleu clair
+    elif str(row["jour"]).strip().lower() == "vendredi":
+        background = "#fff4cc"  # jaune clair
     else:
-        return [""] * len(row)
+        background = "white"
+
+    # Si jour férié, texte rouge mais garder fond du parent
+    if pd.notna(row["nom_ferie"]) and str(row["nom_ferie"]).strip() != "":
+        style = f"background-color: {background}; color: red; font-weight: bold;"
+    else:
+        style = f"background-color: {background};"
+
+    return [style] * len(row)
 
 
 def color_vacances(val):
@@ -72,7 +71,6 @@ def color_vacances(val):
     if pd.notna(val) and str(val).strip() != "":
         return "background-color: #e3d8ff"
     return ""
-
 
 # -----------------------------
 # 📅 Sélecteur de mois
@@ -103,7 +101,7 @@ st.markdown("""
 - 🟦 **Sanou**
 - 🟪 **Vacances scolaires** (uniquement colonne dédiée)
 - 🟨 **Vendredi** (jour de transition)
-- 🔴 **Jours fériés (texte rouge sur toute la ligne)**
+- 🔴 **Jours fériés : texte rouge, fond du parent conservé**
 """)
 
 st.dataframe(styled_df, use_container_width=True)
@@ -113,9 +111,9 @@ st.dataframe(styled_df, use_container_width=True)
 # -----------------------------
 st.markdown(
     "<p style='color:gray; font-size:13px;'>"
-    "Les jours fériés apparaissent désormais en <b>texte rouge sur toute la ligne</b>. "
-    "La colonne <b>parent</b> est déplacée juste après la colonne <b>mois</b>. "
-    "Les vacances scolaires restent violettes uniquement dans leur colonne. "
+    "Les jours fériés sont affichés en <b>texte rouge</b> sur le fond du parent. "
+    "La colonne <b>parent</b> est juste après <b>mois</b>. "
+    "Les vacances scolaires apparaissent uniquement dans leur colonne en violet. "
     "Les vendredis sont surlignés en jaune clair."
     "</p>",
     unsafe_allow_html=True
