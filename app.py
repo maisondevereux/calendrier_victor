@@ -1,68 +1,98 @@
 import pandas as pd
-import datetime
 import streamlit as st
 
-# --- Chargement du fichier ---
-df = pd.read_csv("calendrier.csv", parse_dates=["date"])
+# -----------------------------
+# ⚙️ Configuration
+# -----------------------------
+st.set_page_config(page_title="Calendrier Victor", layout="wide")
+st.title("📅 Calendrier de garde Victor — 2025-2026")
 
-# --- Tri chronologique ---
-df = df.sort_values("date").reset_index(drop=True)
+# -----------------------------
+# 📂 Chargement des données
+# -----------------------------
+@st.cache_data
+def load_data():
+    return pd.read_excel("calendrier_garde_victor_2025_2026_essai.xlsx")
 
-# --- Date du jour ---
-today = pd.Timestamp(datetime.date.today())
+df = load_data()
 
-# --- Trouver la ligne du jour (ou la plus proche) ---
-index_today = df.index[df['date'].dt.date == today.date()]
-if not index_today.empty:
-    idx = index_today[0]
-else:
-    idx = (df['date'] - today).abs().idxmin()
+# -----------------------------
+# 🎨 Fonctions de coloration
+# -----------------------------
+def color_row(row):
+    """
+    Coloration par ligne complète (hors colonne Vacances_scolaires)
+    """
+    # Vendredi (couleur spéciale)
+    if str(row["jour"]).strip().lower() == "vendredi":
+        color = "#fff4cc"  # jaune clair
 
-# --- Fonction de coloration par ligne ---
-def color_rows(row):
-    if row['date'].date() == today.date():
-        return ['background-color: #FFF59D'] * len(row)  # 🟡 ligne du jour
-    elif row.get('nom_ferie') not in [None, "None"]:
-        return ['background-color: #FFCDD2'] * len(row)  # 🔴 jour férié
-    elif row['jour'] == 'vendredi':
-        return ['background-color: #FFE082'] * len(row)  # 🟠 vendredi transition
-    elif row['parent'] == 'Jerome':
-        return ['background-color: #C8E6C9'] * len(row)  # 🟢 Jérôme
-    elif row['parent'] == 'Sanou':
-        return ['background-color: #BBDEFB'] * len(row)  # 🔵 Sanou
+    # Jours fériés
+    elif pd.notna(row["nom_ferie"]) and str(row["nom_ferie"]).strip().lower() not in ["none", ""]:
+        color = "#f9d5d3"  # rouge clair
+
+    # Parent Jérôme
+    elif "Jerome" in str(row["parent"]):
+        color = "#d2f8d2"  # vert clair
+
+    # Parent Sanou
+    elif "Sanou" in str(row["parent"]):
+        color = "#cce0ff"  # bleu clair
+
     else:
-        return [''] * len(row)
+        color = "white"
 
-# --- Mise en forme spéciale pour la colonne "Vacances_scolaires" ---
+    return [f"background-color: {color}"] * len(row)
+
+
 def color_vacances(val):
-    if pd.notna(val) and val not in ["None", ""]:
-        return 'background-color: #E1BEE7'  # 💜 violet uniquement ici
-    return ''
+    """
+    Coloration spécifique uniquement pour la colonne Vacances_scolaires
+    """
+    if pd.notna(val) and str(val).strip().lower() not in ["none", ""]:
+        return "background-color: #e3d8ff"  # violet clair
+    return ""
 
-# --- Titre et légende ---
-st.markdown("""
-### 📅 Légende :
-- 🟢 **Jérôme**
-- 🔵 **Sanou**
-- 💜 **Vacances scolaires** *(uniquement la colonne dédiée)*
-- 🟠 **Vendredi (jour de transition)**
-- 🔴 **Jours fériés**
-- 🟡 **→ Ligne du jour**
-""")
 
-# --- Position d’affichage ---
-start = max(idx - 7, 0)
-end = min(idx + 7, len(df))
+# -----------------------------
+# 📅 Sélecteur de mois
+# -----------------------------
+mois_uniques = df["mois"].dropna().unique().tolist()
+mois_selection = st.selectbox("Mois :", sorted(mois_uniques, key=lambda x: str(x).lower()))
 
-# --- Application combinée des styles ---
+df_filtre = df[df["mois"] == mois_selection]
+
+# -----------------------------
+# 🖌️ Application des styles
+# -----------------------------
 styled_df = (
-    df.style
-    .apply(color_rows, axis=1)
-    .applymap(color_vacances, subset=['Vacances_scolaires'])
+    df_filtre.style
+    .apply(color_row, axis=1)
+    .applymap(color_vacances, subset=["Vacances_scolaires"])
 )
 
-# --- Affichage ---
-st.dataframe(styled_df, use_container_width=True, height=550)
+# -----------------------------
+# 🧾 Affichage
+# -----------------------------
+st.markdown("""
+## 🗂️ Légende :
+- 🟩 **Jérôme**
+- 🟦 **Sanou**
+- 🟪 **Vacances scolaires** (uniquement colonne dédiée)
+- 🟨 **Vendredi** (jour de transition)
+- 🔴 **Jours fériés**
+""")
 
-# --- Info ---
-st.caption(f"📍 Position actuelle : {df.loc[idx, 'date'].strftime('%A %d %B %Y')}")
+st.dataframe(styled_df, use_container_width=True)
+
+# -----------------------------
+# 🧠 Note de bas de page
+# -----------------------------
+st.markdown(
+    "<p style='color:gray; font-size:13px;'>"
+    "Les vacances scolaires apparaissent uniquement dans leur colonne en violet. "
+    "Les vendredis sont surlignés en jaune clair. "
+    "Les autres couleurs indiquent les gardes de Jérôme et Sanou."
+    "</p>",
+    unsafe_allow_html=True
+)
