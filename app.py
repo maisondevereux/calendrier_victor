@@ -89,8 +89,8 @@ mois_label_selection = st.selectbox("Mois :", mois_labels)
 mois_selection = mois_map[mois_label_selection]
 df_filtre = df[df["mois_annee"] == mois_selection]
 
-# 🧩 Masquer la colonne "date" dans l'affichage
-df_filtre_visu = df_filtre.drop(columns=["date"])
+# 🧩 Masquer les colonnes techniques
+df_filtre_visu = df_filtre.drop(columns=["date", "mois_annee"])
 
 # -----------------------------
 # 🖌️ Application des styles
@@ -120,7 +120,7 @@ st.dataframe(styled_df, use_container_width=True)
 # -----------------------------
 st.markdown(
     "<p style='color:gray; font-size:13px;'>"
-    "La colonne <b>date</b> est masquée dans l'affichage mais reste utilisée pour le tri. "
+    "Les colonnes <b>date</b> et <b>mois_annee</b> sont masquées dans l'affichage. "
     "La colonne <b>jour_num</b> affiche le numéro du jour dans le mois. "
     "Les jours fériés sont en <b>texte rouge</b> sur le fond du parent. "
     "La colonne <b>parent</b> reste juste après <b>mois</b>. "
