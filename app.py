@@ -89,7 +89,7 @@ st.markdown("""
 ## 🗂️ Légende :
 - 🟩 **Jérôme**
 - 🟦 **Sanou**
-- 🟪 **Vacances scolaires**
+- 🟪 **Vacances scolaires** (uniquement colonne dédiée)
 - 🟨 **Vendredi** (jour de transition)
 - 🔴 **Jours fériés (texte rouge)**
 """)
@@ -102,12 +102,10 @@ st.dataframe(styled_df, use_container_width=True)
 st.markdown(
     "<p style='color:gray; font-size:13px;'>"
     "La colonne des observations et celle de l’année ont été supprimées. "
-    "Les jours fériés apparaissent en rouge sans fond coloré. "
-    "Les valeurs 'None' ont été supprimées. "
-    "Les dates sont affichées sans les heures (JJ/MM/AAAA)."
+    "Les jours fériés apparaissent en <b>texte rouge</b> sans fond coloré. "
+    "Les vacances scolaires apparaissent uniquement dans leur colonne en violet. "
+    "Les vendredis sont surlignés en jaune clair. "
+    "Les autres couleurs indiquent les gardes de Jérôme et Sanou."
     "</p>",
-    unsafe_allow_html=True
-)
-
     unsafe_allow_html=True
 )
