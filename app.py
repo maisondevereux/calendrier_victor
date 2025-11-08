@@ -1,49 +1,24 @@
-# app.py
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-# --- CONFIGURATION DE LA PAGE
-st.set_page_config(page_title="Calendrier Garde Victor", layout="wide")
+# Chargement
+df = pd.read_excel("calendrier_garde_victor_2025_2026_essai.xlsx")
 
-# --- CHARGEMENT DU FICHIER EXCEL
-@st.cache_data
-def load_data():
-    url = "https://github.com/maisondevereux/calendrier_victor/raw/main/calendrier_garde_victor_2025_2026_essai.xlsx"
-    df = pd.read_excel(url)
-    df['date'] = pd.to_datetime(df['date'])
-    return df
-
-df = load_data()
-
-# --- STYLE COULEUR
-def couleur_ligne(row):
-    if pd.notna(row['nom_ferie']):
-        return ['background-color: #F4CCCC'] * len(row)   # rouge clair
-    elif row['Vacances_scolaires'] not in ["", None]:
-        return ['background-color: #EAD1DC'] * len(row)   # violet clair
-    elif row['parent'] == 'Jerome':
-        return ['background-color: #C6E0B4'] * len(row)   # vert clair
-    elif row['parent'] == 'Sanou':
-        return ['background-color: #BDD7EE'] * len(row)   # bleu clair
+# Styles couleur
+def color_row(row):
+    if row["nom_ferie"] != "None":
+        color = "#f9d5d3"  # rouge clair
+    elif row["Vacances_scolaires"] != "None":
+        color = "#e3d8ff"  # violet pâle
+    elif "Jerome" in str(row["parent"]):
+        color = "#d2f8d2"  # vert clair
+    elif "Sanou" in str(row["parent"]):
+        color = "#cce0ff"  # bleu clair
     else:
-        return [''] * len(row)
+        color = "white"
+    return [f"background-color: {color}"] * len(row)
 
-# --- INTERFACE
-st.title("📅 Calendrier de garde Victor")
-st.markdown("Semaine par semaine, avec codes couleur : Jérôme / Sanou / Vacances / Fériés")
+styled_df = df.style.apply(color_row, axis=1)
 
-# Sélecteurs dynamiques
-annees = sorted(df['annee'].unique())
-annee_sel = st.selectbox("Année", annees, index=len(annees)-1)
-
-mois = sorted(df.loc[df['annee'] == annee_sel, 'mois'].unique())
-mois_sel = st.selectbox("Mois", mois)
-
-# Filtrage
-df_filtre = df[(df['annee'] == annee_sel) & (df['mois'] == mois_sel)]
-
-# Affichage stylé
-styled = df_filtre.style.apply(couleur_ligne, axis=1)
-st.dataframe(styled, use_container_width=True)
-
-st.caption("🟩 Jérôme  🟦 Sanou  🟪 Vacances scolaires  🔴 Fériés")
+st.markdown("### 📅 Calendrier de garde Victor")
+st.dataframe(styled_df, use_container_width=True)
