@@ -72,7 +72,7 @@ styled_df = (
 )
 
 # -----------------------------
-# 🧾 Affichage
+# 🧾 Affichage Streamlit
 # -----------------------------
 st.markdown("""
 ## 🗂️ Légende :
