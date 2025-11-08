@@ -64,13 +64,14 @@ def color_vacances(val):
 # -----------------------------
 # 📅 Sélecteur de mois
 # -----------------------------
-df["mois_annee"] = pd.to_datetime(df["date"]).astype("datetime64[M]")
+df["mois_annee"] = pd.to_datetime(df["date"]).dt.to_period("M")
 mois_uniques = sorted(df["mois_annee"].unique())
-mois_labels = [pd.to_datetime(p).strftime("%B %Y") for p in mois_uniques]
+mois_labels = [p.strftime("%B %Y") for p in mois_uniques]
 mois_map = dict(zip(mois_labels, mois_uniques))
 mois_label_selection = st.selectbox("Mois :", mois_labels)
 mois_selection = mois_map[mois_label_selection]
-df_filtre = df[pd.to_datetime(df["mois_annee"]) == pd.to_datetime(mois_selection)]
+df_filtre = df[df["mois_annee"] == mois_selection]
+
 
 # -----------------------------
 # 🖌️ Application des styles
