@@ -57,10 +57,29 @@ def color_vacances(val):
 # -----------------------------
 # 📅 Sélecteur de mois
 # -----------------------------
-mois_uniques = df["mois"].dropna().unique().tolist()
-mois_selection = st.selectbox("Mois :", sorted(mois_uniques, key=lambda x: str(x).lower()))
 
-df_filtre = df[df["mois"] == mois_selection]
+# On suppose que df["date"] contient des dates réelles
+# Si ce n'est pas le cas, adapte la colonne à celle où tu stockes les dates complètes
+df["mois_annee"] = pd.to_datetime(df["date"]).dt.to_period("M")
+
+# Création d'une liste unique et triée de périodes (mois + année)
+mois_uniques = sorted(df["mois_annee"].unique())
+
+# Génération des libellés lisibles, ex : "janvier 2026"
+mois_labels = [p.strftime("%B %Y") for p in mois_uniques]
+
+# Association entre libellé affiché et période réelle
+mois_map = dict(zip(mois_labels, mois_uniques))
+
+# Sélecteur Streamlit avec libellés triés chronologiquement
+mois_label_selection = st.selectbox("Mois :", mois_labels)
+
+# Conversion inverse pour filtrer le dataframe
+mois_selection = mois_map[mois_label_selection]
+
+# Filtrage des lignes correspondant au mois choisi
+df_filtre = df[df["mois_annee"] == mois_selection]
+
 
 # -----------------------------
 # 🖌️ Application des styles
